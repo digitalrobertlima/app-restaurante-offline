@@ -151,6 +151,21 @@
             </div>
         </div>
 
+        <!-- Landing Page View -->
+        <div id="landingView" class="hidden max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 text-center">
+            <div class="text-green-600 text-6xl mb-4">🍱</div>
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Bem-vindo ao Marmitas do Chef!</h2>
+            <p class="text-gray-600 mb-6">Sistema de pedidos de marmitas</p>
+            
+            <div class="space-y-3">
+                <a href="?admin=true" class="block w-full px-6 py-3 bg-primary text-white rounded-lg hover:bg-secondary transition-colors font-semibold">
+                    🛠️ Painel Admin
+                </a>
+                <p class="text-gray-500 text-sm">ou</p>
+                <p class="text-gray-600">Acesse via link do cardápio do dia</p>
+            </div>
+        </div>
+
         <!-- Loading/Error View -->
         <div id="loadingView" class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
@@ -184,8 +199,7 @@
             } else {
                 showLoading();
                 setTimeout(() => {
-                    showToast('Acesse com ?admin=true para configurar o cardápio');
-                    showAdminView();
+                    showLandingPage();
                 }, 1000);
             }
         });
@@ -194,19 +208,29 @@
         function showAdminView() {
             document.getElementById('adminView').classList.remove('hidden');
             document.getElementById('clientView').classList.add('hidden');
+            document.getElementById('landingView').classList.add('hidden');
             document.getElementById('loadingView').classList.add('hidden');
         }
 
         function showClientView() {
             document.getElementById('adminView').classList.add('hidden');
             document.getElementById('clientView').classList.remove('hidden');
+            document.getElementById('landingView').classList.add('hidden');
             document.getElementById('loadingView').classList.add('hidden');
         }
 
         function showLoading() {
             document.getElementById('adminView').classList.add('hidden');
             document.getElementById('clientView').classList.add('hidden');
+            document.getElementById('landingView').classList.add('hidden');
             document.getElementById('loadingView').classList.remove('hidden');
+        }
+
+        function showLandingPage() {
+            document.getElementById('adminView').classList.add('hidden');
+            document.getElementById('clientView').classList.add('hidden');
+            document.getElementById('loadingView').classList.add('hidden');
+            document.getElementById('landingView').classList.remove('hidden');
         }
 
         function showToast(message) {
