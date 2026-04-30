@@ -250,6 +250,7 @@
 
             const base64Data = btoa(JSON.stringify(menuData));
             const url = new URL(window.location.href);
+            url.searchParams.delete('admin'); // Remove o parâmetro admin
             url.searchParams.set('menu', base64Data);
             
             document.getElementById('generatedLink').value = url.toString();
@@ -292,7 +293,9 @@
             } catch (error) {
                 console.error('Erro ao carregar cardápio:', error);
                 showToast('Erro ao carregar o cardápio. Verifique o link.');
-                showAdminView();
+                showClientView();
+                document.getElementById('menuExpired').classList.remove('hidden');
+                document.getElementById('menuForm').classList.add('hidden');
             }
         }
 
