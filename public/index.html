@@ -154,15 +154,35 @@
         <!-- Landing Page View -->
         <div id="landingView" class="hidden max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 text-center">
             <div class="text-green-600 text-6xl mb-4">🍱</div>
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">Bem-vindo ao Marmitas do Chef!</h2>
-            <p class="text-gray-600 mb-6">Sistema de pedidos de marmitas</p>
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Marmitas do Chef</h2>
+            <p class="text-gray-600 mb-6">O que você deseja fazer?</p>
             
-            <div class="space-y-3">
-                <a href="?admin=true" class="block w-full px-6 py-3 bg-primary text-white rounded-lg hover:bg-secondary transition-colors font-semibold">
-                    🛠️ Painel Admin
-                </a>
-                <p class="text-gray-500 text-sm">ou</p>
-                <p class="text-gray-600">Acesse via link do cardápio do dia</p>
+            <div class="space-y-4">
+                <button onclick="showRequestMenu()" class="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                    📋 Solicitar Cardápio do Dia
+                </button>
+                
+                <button onclick="showAdminLogin()" class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                    🛠️ Alterar Pratos (Admin)
+                </button>
+            </div>
+        </div>
+
+        <!-- Admin Login View -->
+        <div id="adminLoginView" class="hidden max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 text-center">
+            <div class="text-blue-600 text-6xl mb-4">🔒</div>
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Acesso Restrito</h2>
+            <p class="text-gray-600 mb-6">Digite a senha de administrador</p>
+            
+            <input type="password" id="adminPassword" placeholder="Senha" class="w-full px-3 py-2 border border-gray-300 rounded-md mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            
+            <div class="space-y-2">
+                <button onclick="checkAdminPassword()" class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                    🔑 Acessar Painel
+                </button>
+                <button onclick="showLandingPage()" class="w-full px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-semibold">
+                    ↩️ Voltar
+                </button>
             </div>
         </div>
 
@@ -185,6 +205,12 @@
             name: 'Marmitas do Chef'
         };
 
+        // Configurações de Segurança
+        const adminConfig = {
+            password: 'marmitas123', // Senha padrão - deve ser alterada em produção
+            storageKey: 'admin_authenticated'
+        };
+
         // Estado global
         let currentMenu = null;
 
@@ -193,7 +219,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             
             if (urlParams.has('admin')) {
-                showAdminView();
+                checkAdminAuthentication();
             } else if (urlParams.has('menu')) {
                 loadMenuFromUrl();
             } else {
@@ -209,6 +235,7 @@
             document.getElementById('adminView').classList.remove('hidden');
             document.getElementById('clientView').classList.add('hidden');
             document.getElementById('landingView').classList.add('hidden');
+            document.getElementById('adminLoginView').classList.add('hidden');
             document.getElementById('loadingView').classList.add('hidden');
         }
 
@@ -216,6 +243,7 @@
             document.getElementById('adminView').classList.add('hidden');
             document.getElementById('clientView').classList.remove('hidden');
             document.getElementById('landingView').classList.add('hidden');
+            document.getElementById('adminLoginView').classList.add('hidden');
             document.getElementById('loadingView').classList.add('hidden');
         }
 
@@ -229,8 +257,51 @@
         function showLandingPage() {
             document.getElementById('adminView').classList.add('hidden');
             document.getElementById('clientView').classList.add('hidden');
+            document.getElementById('adminLoginView').classList.add('hidden');
             document.getElementById('loadingView').classList.add('hidden');
             document.getElementById('landingView').classList.remove('hidden');
+        }
+
+        function showAdminLogin() {
+            document.getElementById('adminView').classList.add('hidden');
+            document.getElementById('clientView').classList.add('hidden');
+            document.getElementById('landingView').classList.add('hidden');
+            document.getElementById('loadingView').classList.add('hidden');
+            document.getElementById('adminLoginView').classList.remove('hidden');
+            
+            // Limpar campo de senha
+            document.getElementById('adminPassword').value = '';
+        }
+
+        function showRequestMenu() {
+            contactForTodayMenu();
+        }
+
+        function checkAdminAuthentication() {
+            const isAuthenticated = sessionStorage.getItem(adminConfig.storageKey) === 'true';
+            
+            if (isAuthenticated) {
+                showAdminView();
+            } else {
+                showAdminLogin();
+                showToast('Acesso restrito. Faça login primeiro.');
+            }
+        }
+
+        function checkAdminPassword() {
+            const passwordInput = document.getElementById('adminPassword');
+            const password = passwordInput.value.trim();
+            
+            if (password === adminConfig.password) {
+                // Salvar autenticação no sessionStorage (expira quando o navegador fecha)
+                sessionStorage.setItem(adminConfig.storageKey, 'true');
+                showAdminView();
+                showToast('Acesso concedido!');
+            } else {
+                showToast('Senha incorreta. Tente novamente.');
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
         }
 
         function showToast(message) {
