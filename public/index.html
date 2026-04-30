@@ -66,6 +66,20 @@
                     </button>
                 </div>
 
+                <!-- Saladas -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-3 text-gray-700">Saladas</h3>
+                    <div id="saladOptionsContainer" class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <input type="text" placeholder="Nome da salada" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <button onclick="removeSaladOption(this)" class="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">🗑️</button>
+                        </div>
+                    </div>
+                    <button onclick="addSaladOption()" class="mt-3 px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary transition-colors">
+                        + Adicionar Salada
+                    </button>
+                </div>
+
                 <!-- Gerar Link -->
                 <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
                     <h4 class="font-medium text-green-800 mb-2">Gerar Link do Cardápio</h4>
@@ -111,6 +125,14 @@
                 <div class="mb-6">
                     <h3 class="text-lg font-medium mb-3 text-gray-700">2. Escolha os acompanhamentos:</h3>
                     <div id="sideOptionsList" class="space-y-2">
+                        <!-- Opções serão inseridas via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Saladas -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-3 text-gray-700">3. Escolha as saladas:</h3>
+                    <div id="saladOptionsList" class="space-y-2">
                         <!-- Opções serão inseridas via JavaScript -->
                     </div>
                 </div>
@@ -228,12 +250,29 @@
             }
         }
 
+        function addSaladOption() {
+            const container = document.getElementById('saladOptionsContainer');
+            const newOption = container.children[0].cloneNode(true);
+            newOption.querySelector('input').value = '';
+            container.appendChild(newOption);
+        }
+
+        function removeSaladOption(button) {
+            if (document.getElementById('saladOptionsContainer').children.length > 1) {
+                button.parentElement.remove();
+            }
+        }
+
         function generateMenuLink() {
             const mainOptions = Array.from(document.getElementById('mainOptionsContainer').children)
                 .map(item => item.querySelector('input').value.trim())
                 .filter(value => value);
             
             const sideOptions = Array.from(document.getElementById('sideOptionsContainer').children)
+                .map(item => item.querySelector('input').value.trim())
+                .filter(value => value);
+
+            const saladOptions = Array.from(document.getElementById('saladOptionsContainer').children)
                 .map(item => item.querySelector('input').value.trim())
                 .filter(value => value);
 
@@ -245,7 +284,8 @@
             const menuData = {
                 data: new Date().toISOString().split('T')[0], // YYYY-MM-DD
                 principais: mainOptions,
-                acompanhamentos: sideOptions
+                acompanhamentos: sideOptions,
+                saladas: saladOptions
             };
 
             const base64Data = btoa(JSON.stringify(menuData));
@@ -333,6 +373,22 @@
                 `;
                 sideContainer.appendChild(div);
             });
+
+            // Renderizar saladas
+            const saladContainer = document.getElementById('saladOptionsList');
+            saladContainer.innerHTML = '';
+            
+            if (currentMenu.saladas && currentMenu.saladas.length > 0) {
+                currentMenu.saladas.forEach((opcao, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center';
+                    div.innerHTML = `
+                        <input type="checkbox" id="salad_${index}" name="saladOptions" value="${opcao}" class="mr-2" checked>
+                        <label for="salad_${index}" class="text-gray-700">${opcao}</label>
+                    `;
+                    saladContainer.appendChild(div);
+                });
+            }
         }
 
         function sendOrder() {
@@ -340,22 +396,25 @@
             const address = document.getElementById('customerAddress').value.trim();
             const mainOption = document.querySelector('input[name="mainOption"]:checked');
             const sideOptions = Array.from(document.querySelectorAll('input[name="sideOptions"]:checked'));
+            const saladOptions = Array.from(document.querySelectorAll('input[name="saladOptions"]:checked'));
 
-            if (!name || !address || !mainOption || sideOptions.length === 0) {
+            if (!name || !address || !mainOption || (sideOptions.length === 0 && saladOptions.length === 0)) {
                 showToast('Preencha todos os campos e faça suas escolhas');
                 return;
             }
 
             const mainChoice = mainOption.value;
             const sideChoices = sideOptions.map(opt => opt.value).join(', ');
+            const saladChoices = saladOptions.map(opt => opt.value).join(', ');
             const today = new Date().toLocaleDateString('pt-BR');
 
             const message = `*Pedido de Marmita - ${today}*\n\n` +
                            `*Nome:* ${name}\n` +
                            `*Endereço:* ${address}\n\n` +
                            `*Carne escolhida:* ${mainChoice}\n` +
-                           `*Acompanhamentos:* ${sideChoices}\n\n` +
-                           `*Total de itens:* ${1 + sideOptions.length}`;
+                           `*Acompanhamentos:* ${sideChoices}\n` +
+                           `*Saladas:* ${saladChoices || 'Nenhuma'}\n\n` +
+                           `*Total de itens:* ${1 + sideOptions.length + saladOptions.length}`;
 
             const whatsappUrl = `https://wa.me/${restaurant.phone}?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
