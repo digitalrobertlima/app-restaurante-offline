@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marmitas do Chef</title>
+    <meta name="theme-color" content="#10B981">
+    <meta name="description" content="Sistema de pedidos de marmitas - Restaurante do Chef">
+    <link rel="manifest" href="data:application/json;base64,ewogICAgIm5hbWUiOiAiTWFybWl0YXMgZG8gQ2hlZiIsCiAgICAic2hvcnRfbmFtZSI6ICJNYXJtaXRhcyIsCiAgICAic3RhcnRfdXJsIjogIi8iLAogICAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMTBCOTgxIiwKICAgICJ0aGVtZV9jb2xvciI6ICIjMTBCOTgxIiwKICAgICJpY29ucyI6IFt7CiAgICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lJSEJ5YjJacGJHVWlPbHR3TkM0d0xqQXVNaTR3TURBZ01UQXlMakV4TWlJZ1lYVjBieUlnWm1sc2JEMGlkWEpzS0NOc2FXNWxZWEpIY21Ga2FXVnVkQzVqYjIwaUlITjBjbTlyWlQwaWJHbHVaV0p5YjNJdFkyOXNiM0lpSUhacFpYZENiM2c5SWpBdU1EQWlJSGs5SWpFdU1TSWdkMmxrZEdnOUlqRXdJaUJvWldsbmFIUTlJalV3SlNJK0NpQWdQR2NnYzNSNWJHVTlJbVZ1WTNKbGN5QmpiR0ZwYlhNZ2JXVmthWFF0YVc1MWJ6MGlZMk5sWTNScGIyNGlQand2YzNablBnPT0iLAogICAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgICAidHlwZSI6ICJpbWFnZS9wbmciCiAgICB9XQp9">
+    
+    <!-- TailwindCSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10B981',
+                        secondary: '#059669',
+                        accent: '#047857'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+    <!-- Header -->
+    <header class="bg-primary text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <h1 class="text-2xl font-bold text-center">🍱 Marmitas do Chef</h1>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Admin View -->
+        <div id="adminView" class="hidden">
+            <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-semibold mb-6 text-gray-800">Painel Admin - Cardápio do Dia</h2>
+                
+                <!-- Opções Principais -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-3 text-gray-700">Opções Principais (Carnes)</h3>
+                    <div id="mainOptionsContainer" class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <input type="text" placeholder="Nome da opção" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <button onclick="removeMainOption(this)" class="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">🗑️</button>
+                        </div>
+                    </div>
+                    <button onclick="addMainOption()" class="mt-3 px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary transition-colors">
+                        + Adicionar Opção
+                    </button>
+                </div>
+
+                <!-- Acompanhamentos -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-3 text-gray-700">Acompanhamentos</h3>
+                    <div id="sideOptionsContainer" class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <input type="text" placeholder="Nome do acompanhamento" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <button onclick="removeSideOption(this)" class="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">🗑️</button>
+                        </div>
+                    </div>
+                    <button onclick="addSideOption()" class="mt-3 px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary transition-colors">
+                        + Adicionar Acompanhamento
+                    </button>
+                </div>
+
+                <!-- Gerar Link -->
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                    <h4 class="font-medium text-green-800 mb-2">Gerar Link do Cardápio</h4>
+                    <div class="flex space-x-2">
+                        <input type="text" id="generatedLink" readonly class="flex-1 px-3 py-2 border border-green-300 rounded-md bg-white text-green-800" placeholder="O link será gerado aqui...">
+                        <button onclick="copyLink()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                            📋 Copiar
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="generateMenuLink()" class="w-full px-6 py-3 bg-primary text-white rounded-lg hover:bg-secondary transition-colors font-semibold">
+                    🍽️ Gerar Link do Cardápio
+                </button>
+            </div>
+        </div>
+
+        <!-- Client View -->
+        <div id="clientView" class="hidden">
+            <!-- Menu Expired -->
+            <div id="menuExpired" class="hidden max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 text-center">
+                <div class="text-yellow-600 text-6xl mb-4">⏰</div>
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Cardápio Expirado</h2>
+                <p class="text-gray-600 mb-6">Este cardápio é de outro dia e já expirou.</p>
+                <button onclick="contactForTodayMenu()" class="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                    💬 Pedir Cardápio de Hoje
+                </button>
+            </div>
+
+            <!-- Menu Form -->
+            <div id="menuForm" class="hidden max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-semibold mb-6 text-gray-800 text-center">Monte sua Marmita</h2>
+                
+                <!-- Carne Principal -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-3 text-gray-700">1. Escolha a carne:</h3>
+                    <div id="mainOptionsList" class="space-y-2">
+                        <!-- Opções serão inseridas via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Acompanhamentos -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-3 text-gray-700">2. Escolha os acompanhamentos:</h3>
+                    <div id="sideOptionsList" class="space-y-2">
+                        <!-- Opções serão inseridas via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Dados do Cliente -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium mb-3 text-gray-700">Seus dados:</h3>
+                    <input type="text" id="customerName" placeholder="Seu nome" class="w-full px-3 py-2 border border-gray-300 rounded-md mb-3 focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <input type="text" id="customerAddress" placeholder="Seu endereço" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+
+                <!-- Enviar Pedido -->
+                <button onclick="sendOrder()" class="w-full px-6 py-3 bg-primary text-white rounded-lg hover:bg-secondary transition-colors font-semibold">
+                    📱 Enviar Pedido via WhatsApp
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading/Error View -->
+        <div id="loadingView" class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p class="text-gray-600">Carregando...</p>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg transform translate-y-16 transition-transform duration-300 opacity-0">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script>
+        // Configurações
+        const restaurant = {
+            phone: '5531982313684', // Substituir pelo número real
+            name: 'Marmitas do Chef'
+        };
+
+        // Estado global
+        let currentMenu = null;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            if (urlParams.has('admin')) {
+                showAdminView();
+            } else if (urlParams.has('menu')) {
+                loadMenuFromUrl();
+            } else {
+                showLoading();
+                setTimeout(() => {
+                    showToast('Acesse com ?admin=true para configurar o cardápio');
+                    showAdminView();
+                }, 1000);
+            }
+        });
+
+        // Funções de View
+        function showAdminView() {
+            document.getElementById('adminView').classList.remove('hidden');
+            document.getElementById('clientView').classList.add('hidden');
+            document.getElementById('loadingView').classList.add('hidden');
+        }
+
+        function showClientView() {
+            document.getElementById('adminView').classList.add('hidden');
+            document.getElementById('clientView').classList.remove('hidden');
+            document.getElementById('loadingView').classList.add('hidden');
+        }
+
+        function showLoading() {
+            document.getElementById('adminView').classList.add('hidden');
+            document.getElementById('clientView').classList.add('hidden');
+            document.getElementById('loadingView').classList.remove('hidden');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.classList.remove('opacity-0', 'translate-y-16');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-16');
+            }, 3000);
+        }
+
+        // Funções do Admin
+        function addMainOption() {
+            const container = document.getElementById('mainOptionsContainer');
+            const newOption = container.children[0].cloneNode(true);
+            newOption.querySelector('input').value = '';
+            container.appendChild(newOption);
+        }
+
+        function removeMainOption(button) {
+            if (document.getElementById('mainOptionsContainer').children.length > 1) {
+                button.parentElement.remove();
+            }
+        }
+
+        function addSideOption() {
+            const container = document.getElementById('sideOptionsContainer');
+            const newOption = container.children[0].cloneNode(true);
+            newOption.querySelector('input').value = '';
+            container.appendChild(newOption);
+        }
+
+        function removeSideOption(button) {
+            if (document.getElementById('sideOptionsContainer').children.length > 1) {
+                button.parentElement.remove();
+            }
+        }
+
+        function generateMenuLink() {
+            const mainOptions = Array.from(document.getElementById('mainOptionsContainer').children)
+                .map(item => item.querySelector('input').value.trim())
+                .filter(value => value);
+            
+            const sideOptions = Array.from(document.getElementById('sideOptionsContainer').children)
+                .map(item => item.querySelector('input').value.trim())
+                .filter(value => value);
+
+            if (mainOptions.length === 0 || sideOptions.length === 0) {
+                showToast('Adicione pelo menos uma opção principal e um acompanhamento');
+                return;
+            }
+
+            const menuData = {
+                data: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+                principais: mainOptions,
+                acompanhamentos: sideOptions
+            };
+
+            const base64Data = btoa(JSON.stringify(menuData));
+            const url = new URL(window.location.href);
+            url.searchParams.set('menu', base64Data);
+            
+            document.getElementById('generatedLink').value = url.toString();
+            showToast('Link gerado com sucesso!');
+        }
+
+        function copyLink() {
+            const linkInput = document.getElementById('generatedLink');
+            if (linkInput.value) {
+                linkInput.select();
+                document.execCommand('copy');
+                showToast('Link copiado para a área de transferência!');
+            }
+        }
+
+        // Funções do Cliente
+        function loadMenuFromUrl() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const menuBase64 = urlParams.get('menu');
+                
+                if (!menuBase64) {
+                    throw new Error('Nenhum cardápio encontrado na URL');
+                }
+
+                const menuJson = atob(menuBase64);
+                currentMenu = JSON.parse(menuJson);
+
+                // Validar data
+                const today = new Date().toISOString().split('T')[0];
+                if (currentMenu.data !== today) {
+                    showExpiredMenu();
+                    return;
+                }
+
+                renderMenu();
+                showClientView();
+                document.getElementById('menuForm').classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Erro ao carregar cardápio:', error);
+                showToast('Erro ao carregar o cardápio. Verifique o link.');
+                showAdminView();
+            }
+        }
+
+        function showExpiredMenu() {
+            showClientView();
+            document.getElementById('menuExpired').classList.remove('hidden');
+            document.getElementById('menuForm').classList.add('hidden');
+        }
+
+        function renderMenu() {
+            // Renderizar opções principais
+            const mainContainer = document.getElementById('mainOptionsList');
+            mainContainer.innerHTML = '';
+            
+            currentMenu.principais.forEach((opcao, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center';
+                div.innerHTML = `
+                    <input type="radio" id="main_${index}" name="mainOption" value="${opcao}" class="mr-2" ${index === 0 ? 'checked' : ''}>
+                    <label for="main_${index}" class="text-gray-700">${opcao}</label>
+                `;
+                mainContainer.appendChild(div);
+            });
+
+            // Renderizar acompanhamentos
+            const sideContainer = document.getElementById('sideOptionsList');
+            sideContainer.innerHTML = '';
+            
+            currentMenu.acompanhamentos.forEach((opcao, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center';
+                div.innerHTML = `
+                    <input type="checkbox" id="side_${index}" name="sideOptions" value="${opcao}" class="mr-2" checked>
+                    <label for="side_${index}" class="text-gray-700">${opcao}</label>
+                `;
+                sideContainer.appendChild(div);
+            });
+        }
+
+        function sendOrder() {
+            const name = document.getElementById('customerName').value.trim();
+            const address = document.getElementById('customerAddress').value.trim();
+            const mainOption = document.querySelector('input[name="mainOption"]:checked');
+            const sideOptions = Array.from(document.querySelectorAll('input[name="sideOptions"]:checked'));
+
+            if (!name || !address || !mainOption || sideOptions.length === 0) {
+                showToast('Preencha todos os campos e faça suas escolhas');
+                return;
+            }
+
+            const mainChoice = mainOption.value;
+            const sideChoices = sideOptions.map(opt => opt.value).join(', ');
+            const today = new Date().toLocaleDateString('pt-BR');
+
+            const message = `*Pedido de Marmita - ${today}*\n\n` +
+                           `*Nome:* ${name}\n` +
+                           `*Endereço:* ${address}\n\n` +
+                           `*Carne escolhida:* ${mainChoice}\n` +
+                           `*Acompanhamentos:* ${sideChoices}\n\n` +
+                           `*Total de itens:* ${1 + sideOptions.length}`;
+
+            const whatsappUrl = `https://wa.me/${restaurant.phone}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        function contactForTodayMenu() {
+            const message = 'Olá, pode me enviar o link do cardápio de hoje?';
+            const whatsappUrl = `https://wa.me/${restaurant.phone}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+    </script>
+</body>
+</html>
