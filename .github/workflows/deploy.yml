@@ -30,12 +30,12 @@ jobs:
     - name: 🔍 Validate HTML
       uses: scanapp-org/html-validator-action@v0.3.0
       with:
-        directory: ./public
+        directory: ./
 
     - name: 📦 Upload artifact
       uses: actions/upload-pages-artifact@v2
       with:
-        path: './public'
+        path: '.'
 
     - name: 🚀 Deploy to GitHub Pages
       id: deployment
